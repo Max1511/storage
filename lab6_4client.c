@@ -9,6 +9,11 @@
 
 int main (int argc, char* argv[])
 {
+		if (argc < 2){
+			puts("add DNS to programm call\n");
+			return -1;
+		}
+		
         struct hostent *h;
         h=gethostbyname (argv[1]);
 
@@ -18,6 +23,8 @@ int main (int argc, char* argv[])
         }
 
         int fd;
+        char buffer[4096];
+        memset(buffer, 0, 4096);
         char *fifo = "buffer_channel_4";
 
         mkfifo (fifo, 0666);
@@ -32,9 +39,11 @@ int main (int argc, char* argv[])
         int i=0;
         while (NULL != h->h_addr_list[i]){
                 struct in_addr* tmp = (struct in_addr*) h->h_addr_list[i];
-                write (fd, h->h_addr_list[i], strlen(h->h_addr_list[i]));
+                strcat (buffer, inet_ntoa(*tmp));
                 i++;
         }
+        
+        write (fd, buffer, 4096);
 
         close (fd);
         unlink (fifo);
